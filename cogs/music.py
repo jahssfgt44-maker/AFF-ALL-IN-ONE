@@ -1173,13 +1173,21 @@ class MusicPlayer:
                 # -----------------------------------------
 
                 before_options = (
+                    "-nostdin "
                     "-reconnect 1 "
                     "-reconnect_streamed 1 "
                     "-reconnect_delay_max 5 "
-                    f"-headers \"{ffmpeg_headers}\""
+                    "-headers "
+                    f"\"{ffmpeg_headers}\""
                 )
 
-                ffmpeg_options = "-vn -f s16le -ar 48000 -ac 2"
+                ffmpeg_options = (
+                    "-vn "
+                    "-loglevel warning "
+                    "-ar 48000 "
+                    "-ac 2 "
+                    "-f s16le"
+                )
 
                 try:
 
