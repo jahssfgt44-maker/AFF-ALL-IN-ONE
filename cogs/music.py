@@ -1182,12 +1182,13 @@ class MusicPlayer:
                     f"\"{ffmpeg_headers}\""
                 )
 
+                # Fixed with raw s16le PCM output format for discord voice client
                 ffmpeg_options = (
                     "-vn "
                     "-loglevel warning "
                     "-ar 48000 "
                     "-ac 2 "
-                    "-bufsize 512k"
+                    "-f s16le"
                 )
 
                 try:
