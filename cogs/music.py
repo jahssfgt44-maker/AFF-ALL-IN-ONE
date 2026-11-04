@@ -1087,29 +1087,31 @@ class MusicPlayer:
                 # -----------------------------------------
 
                
-before_options = (
-    "-nostdin "
-    "-reconnect 1 "
-    "-reconnect_streamed 1 "
-    "-reconnect_at_eof 1 "
-    "-reconnect_on_network_error 1 "
-    "-reconnect_on_http_error "
-    "403,404,408,429,500,502,503,504 "
-    "-reconnect_delay_max 3 "
-    "-rw_timeout 15000000 "
-    "-headers "
-    f"\"{ffmpeg_headers}\""
-)
+                # -----------------------------------------
+                # FFMPEG
+                # -----------------------------------------
 
-ffmpeg_options = (
-    "-vn "
-    "-loglevel warning "
-    "-bufsize 512k"
-)
+                before_options = (
+                    "-nostdin "
+                    "-reconnect 1 "
+                    "-reconnect_streamed 1 "
+                    "-reconnect_at_eof 1 "
+                    "-reconnect_on_network_error 1 "
+                    "-reconnect_on_http_error "
+                    "403,404,408,429,500,502,503,504 "
+                    "-reconnect_delay_max 3 "
+                    "-rw_timeout 15000000 "
+                    "-headers "
+                    f"\"{ffmpeg_headers}\""
+                )
 
+                ffmpeg_options = (
+                    "-vn "
+                    "-loglevel warning "
+                    "-bufsize 512k"
+                )
 
                 try:
-
                     source = discord.FFmpegPCMAudio(
                         stream_url,
                         executable=FFMPEG_PATH,
@@ -1117,21 +1119,17 @@ ffmpeg_options = (
                         options=ffmpeg_options
                     )
 
-                    source = (
-                        discord.PCMVolumeTransformer(
-                            source,
-                            volume=self.volume
-                        )
+                    source = discord.PCMVolumeTransformer(
+                        source,
+                        volume=self.volume
                     )
 
                 except Exception as e:
-
-                    print(
-                        "[MUSIC] [FFMPEG ERROR]",
-                        repr(e)
-                    )
-
+                    print("[MUSIC] [FFMPEG ERROR]", repr(e))
                     return
+
+
+                
 
                 # -----------------------------------------
                 # CALLBACK
