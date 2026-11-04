@@ -703,15 +703,13 @@ class MusicPlayer:
 
         def extract():
 
+            # Use the Android player client for direct CDN audio URLs.
+            # web_embedded/android_vr can return stream URLs that YouTube
+            # rejects with HTTP 403 on some current yt-dlp/YouTube combinations.
             strategies = [
                 {
                     "player_client": [
-                        "web_embedded"
-                    ]
-                },
-                {
-                    "player_client": [
-                        "android_vr"
+                        "android"
                     ]
                 },
             ]
