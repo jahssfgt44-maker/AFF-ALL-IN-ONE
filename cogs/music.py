@@ -703,13 +703,15 @@ class MusicPlayer:
 
         def extract():
 
-            # Use the Android player client for direct CDN audio URLs.
-            # web_embedded/android_vr can return stream URLs that YouTube
-            # rejects with HTTP 403 on some current yt-dlp/YouTube combinations.
             strategies = [
                 {
                     "player_client": [
-                        "android"
+                        "web_embedded"
+                    ]
+                },
+                {
+                    "player_client": [
+                        "android_vr"
                     ]
                 },
             ]
@@ -1180,9 +1182,8 @@ class MusicPlayer:
                     f"\"{ffmpeg_headers}\""
                 )
 
-                # FFmpegPCMAudio already appends its required PCM output
-                # settings (-f s16le -ar 48000 -ac 2). Do not repeat -ar/-ac
-                # here, otherwise FFmpeg prints duplicate-option warnings.
+                # FFmpegPCMAudio adds its own PCM output settings
+                # (-f s16le -ar 48000 -ac 2), so do not duplicate them here.
                 ffmpeg_options = (
                     "-vn "
                     "-loglevel warning "
