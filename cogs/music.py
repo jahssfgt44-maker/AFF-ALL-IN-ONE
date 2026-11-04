@@ -703,15 +703,17 @@ class MusicPlayer:
 
         def extract():
 
+            # Optimized strategies to bypass 403 Forbidden & signature extraction blocks
             strategies = [
                 {
                     "player_client": [
-                        "web_embedded"
+                        "android",
+                        "web"
                     ]
                 },
                 {
                     "player_client": [
-                        "android_vr"
+                        "web_embedded"
                     ]
                 },
             ]
@@ -739,9 +741,9 @@ class MusicPlayer:
 
                         "extract_flat": False,
 
+                        # Force best audio format with http protocol
                         "format": (
-                            "bestaudio[protocol^=http]"
-                            "/bestaudio"
+                            "bestaudio[protocol^=http]/bestaudio/best"
                         ),
 
                     })
@@ -1176,13 +1178,13 @@ class MusicPlayer:
                     "-reconnect_on_network_error 1 "
                     "-reconnect_on_http_error "
                     "403,404,408,429,500,502,503,504 "
-                    "-reconnect_delay_max 3 "
-                    "-rw_timeout 10000000 "
+                    "-reconnect_delay_max 5 "
+                    "-rw_timeout 15000000 "
                     "-headers "
                     f"\"{ffmpeg_headers}\""
                 )
 
-                # Fixed with raw s16le PCM output format for discord voice client
+                # Cleaned options to avoid multiple -ar / -ac duplicate warnings
                 ffmpeg_options = (
                     "-vn "
                     "-loglevel warning "
