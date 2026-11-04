@@ -1171,24 +1171,27 @@ class MusicPlayer:
                 # FFMPEG
                 # -----------------------------------------
 
+                # -----------------------------------------
+                # FFMPEG (Silent Playback Fix)
+                # -----------------------------------------
+
                 before_options = (
                     "-nostdin "
                     "-reconnect 1 "
                     "-reconnect_streamed 1 "
-                    "-reconnect_at_eof 1 "
-                    "-reconnect_on_network_error 1 "
-                    "-reconnect_on_http_error "
-                    "403,404,408,429,500,502,503,504 "
-                    "-reconnect_delay_max 3 "
-                    "-rw_timeout 15000000 "
+                    "-reconnect_delay_max 5 "
+                    "-rw_timeout 20000000 "
                     "-headers "
                     f"\"{ffmpeg_headers}\""
                 )
 
+                # Yahan audio filter aur sample rate ko explicitly set kiya hai taaki Discord ko clean PCM mile
                 ffmpeg_options = (
                     "-vn "
-                    "-loglevel warning "
-                    "-bufsize 512k"
+                    "-ar 48000 "
+                    "-ac 2 "
+                    "-f s16le "
+                    "-af volume=1.0"
                 )
 
                 try:
