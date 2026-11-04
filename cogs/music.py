@@ -1024,14 +1024,13 @@ class MusicPlayer:
     # PLAY NEXT
     # =====================================================
 
-    async def play_next(self):
+        async def play_next(self):
 
         async with self.play_lock:
 
             if (
                 not self.voice
-                or
-                not self.voice.is_connected()
+                or not self.voice.is_connected()
             ):
                 return
 
@@ -1042,25 +1041,18 @@ class MusicPlayer:
 
             try:
 
-                # -----------------------------------------
                 # SELECT SONG
-                # -----------------------------------------
-
                 if self.loop and self.current:
-
                     song = self.current
 
                 elif self.queue:
-
                     song = self.queue.popleft()
                     self.current = song
 
                 elif self.autoplay and self.current:
-
                     song = await self.autoplay_song()
 
                     if not song:
-
                         self.current = None
                         await self.clear_voice_status()
                         return
@@ -1068,15 +1060,11 @@ class MusicPlayer:
                     self.current = song
 
                 else:
-
                     self.current = None
                     await self.clear_voice_status()
                     return
 
-                # -----------------------------------------
                 # NEW TOKEN
-                # -----------------------------------------
-
                 self.play_token += 1
                 token = self.play_token
 
@@ -1087,31 +1075,173 @@ class MusicPlayer:
                     token
                 )
 
-                # -----------------------------------------
                 # STOP OLD SOURCE
-                # -----------------------------------------
-
                 if (
                     self.voice.is_playing()
-                    or
-                    self.voice.is_paused()
+                    or self.voice.is_paused()
                 ):
-
                     self.voice.stop()
 
-                # -----------------------------------------
                 # GET STREAM
-                # -----------------------------------------
+                stream = await self.get_audio_stream(song)
 
-                stream = await self.get_audio_stream(
-                    song
+                # STREAM NOT AVAILABLE
+                if not stream:
+                    print(
+                        "[MUSIC] [ERROR] Audio stream unavailable:",
+                        song.title
+                    )
+
+                    self.current = song
+
+                    if self.text_channel:
+                        try:
+                            await self.text_channel.send(
+                                f"⚠️ Could not load audio for **{song.title}**. "
+                                "Use `/skip` to try the next song."
+                            )
+                        except Exception:
+                            pass
+
+                    return
+
+                # TOKEN CHECK
+                if token != self.play_token:
+                    return
+
+                stream_url = stream["url"]
+
+                headers = dict(stream.get("headers") or {})
+
+                headers.setdefault("User-Agent", USER_AGENT)
+                headers.setdefault(
+                    "Referer",
+                    "https://www.youtube.com/"
                 )
 
-                       if not stream:
-            print("[MUSIC] [ERROR] Audio stream unavailable:", song.title)
+                header_lines = [
+                    f"{k}: {v}"
+                    for k, v in headers.items()
+                    if v
+                ]
 
-            self.current = song
-            self.starting = False
+                ffmpeg_headers = (
+                    "\r\n".join(header_lines)
+                    + "\r\n"
+                )
+
+                # FFMPEG
+                before_options = (
+                    "-nostdin "
+                    "-reconnect 1 "
+                    "-reconnect_streamed 1 "
+                    "-reconnect_delay_max 5 "
+                    "-rw_timeout 20000000 "
+                    "-headers "
+                    f"\"{ffmpeg_headers}\""
+                )
+
+                ffmpeg_options = "-vn"
+
+                try:
+                    source = discord.FFmpegPCMAudio(
+                        stream_url,
+                        executable=FFMPEG_PATH,
+                        before_options=before_options,
+                        options=ffmpeg_options
+                    )
+
+                    source = discord.PCMVolumeTransformer(
+                        source,
+                        volume=self.volume
+                    )
+
+                except Exception as e:
+                    print(
+                        "[MUSIC] [FFMPEG ERROR]",
+                        repr(e)
+                    )
+                    return
+
+                # CALLBACK
+                def after_play(error):
+
+                    if error:
+                        print(
+                            "[MUSIC] [FFMPEG]",
+                            repr(error)
+                        )
+
+                    try:
+                        future = asyncio.run_coroutine_threadsafe(
+                            self.finished(token),
+                            self.bot.loop
+                        )
+
+                        def callback(f):
+                            try:
+                                f.exception()
+                            except Exception:
+                                pass
+
+                        future.add_done_callback(callback)
+
+                    except Exception as e:
+                        print(
+                            "[MUSIC] [CALLBACK]",
+                            repr(e)
+                        )
+
+                # FINAL TOKEN CHECK
+                if token != self.play_token:
+                    try:
+                        source.cleanup()
+                    except Exception:
+                        pass
+                    return
+
+                # PLAY
+                self.song_start_time = time.monotonic()
+                self.total_paused = 0
+
+                try:
+                    self.voice.play(
+                        source,
+                        after=after_play
+                    )
+
+                except Exception as e:
+                    print(
+                        "[MUSIC] [ERROR] voice.play:",
+                        repr(e)
+                    )
+
+                    try:
+                        source.cleanup()
+                    except Exception:
+                        pass
+
+                    return
+
+                print(
+                    "[MUSIC] [PLAYING]",
+                    song.title
+                )
+
+                await self.voice_status(
+                    f"🎵 {song.title}"
+                )
+
+                await self.send_now_playing()
+
+            except Exception as e:
+                print(
+                    "[MUSIC] [PLAYBACK ERROR]",
+                    repr(e)
+                )
+
+            finally:
+                self.starting = False
 
             if self.text_channel:
                 try:
@@ -1316,7 +1446,7 @@ class MusicPlayer:
     # FINISHED
     # =====================================================
 
-    async def finished(self, token):
+        async def finished(self, token):
 
         if token != self.play_token:
             return
@@ -1328,49 +1458,45 @@ class MusicPlayer:
 
         if (
             not self.voice
-            or
-            not self.voice.is_connected()
+            or not self.voice.is_connected()
         ):
             return
 
         if (
             self.voice.is_playing()
-            or
-            self.voice.is_paused()
+            or self.voice.is_paused()
         ):
             return
 
         # Detect unexpected early FFmpeg termination
-elapsed = time.monotonic() - self.song_start_time
+        elapsed = time.monotonic() - self.song_start_time
 
-if elapsed < 8:
+        if elapsed < 8:
 
-    print(
-        "[MUSIC] [PLAYBACK FAILED] "
-        f"Song ended unexpectedly after {elapsed:.2f}s"
-    )
-
-    await self.clear_voice_status()
-
-    if self.text_channel:
-        try:
-            await self.text_channel.send(
-                "⚠️ Audio playback failed (possible YouTube 403). "
-                "Automatic skipping stopped. Use `/skip` to continue."
+            print(
+                "[MUSIC] [PLAYBACK FAILED] "
+                f"Song ended unexpectedly after {elapsed:.2f}s"
             )
-        except Exception:
-            pass
 
-    return
+            await self.clear_voice_status()
 
-          print(
-                    "[MUSIC] [FINISHED]",
-                     self.current.title
-                    if self.current
-                     else "Unknown"
-             )
+            if self.text_channel:
+                try:
+                    await self.text_channel.send(
+                        "⚠️ Audio playback failed (possible YouTube 403). "
+                        "Automatic skipping stopped. Use `/skip` to continue."
+                    )
+                except Exception:
+                    pass
 
+            return
 
+        print(
+            "[MUSIC] [FINISHED]",
+            self.current.title
+            if self.current
+            else "Unknown"
+        )
 
         await self.play_next()
 
