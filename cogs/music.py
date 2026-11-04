@@ -483,9 +483,7 @@ class MusicPlayer:
 
         def extract():
             strategies = [
-                {"player_client": ["mweb"]},
-                {"player_client": ["android"]},
-                {"player_client": ["ios"]},
+                "player_client": ["web_safari"]
             ]
 
             for index, strategy in enumerate(strategies, 1):
@@ -501,7 +499,7 @@ class MusicPlayer:
                         "skip_download": True,
                         "noplaylist": True,
                         "extract_flat": False,
-                        "format": "bestaudio/best",
+                       "format": "best[protocol^=m3u8]/best",
                         "extractor_args": {
                             "youtube": strategy
                         },
