@@ -1346,12 +1346,37 @@ class MusicPlayer:
         ):
             return
 
-        print(
-            "[MUSIC] [FINISHED]",
-            self.current.title
-            if self.current
-            else "Unknown"
-        )
+        # Detect unexpected early FFmpeg termination
+elapsed = time.monotonic() - self.song_start_time
+
+if elapsed < 8:
+
+    print(
+        "[MUSIC] [PLAYBACK FAILED] "
+        f"Song ended unexpectedly after {elapsed:.2f}s"
+    )
+
+    await self.clear_voice_status()
+
+    if self.text_channel:
+        try:
+            await self.text_channel.send(
+                "⚠️ Audio playback failed (possible YouTube 403). "
+                "Automatic skipping stopped. Use `/skip` to continue."
+            )
+        except Exception:
+            pass
+
+    return
+
+          print(
+                    "[MUSIC] [FINISHED]",
+                     self.current.title
+                    if self.current
+                     else "Unknown"
+             )
+
+
 
         await self.play_next()
 
