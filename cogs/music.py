@@ -706,12 +706,13 @@ class MusicPlayer:
             strategies = [
                 {
                     "player_client": [
-                        "web_embedded"
+                        "android",
+                        "web"
                     ]
                 },
                 {
                     "player_client": [
-                        "android_vr"
+                        "web_embedded"
                     ]
                 },
             ]
@@ -1117,9 +1118,6 @@ class MusicPlayer:
                     self.current = None
 
                     self.starting = False
-
-                    # Prevent tight loop skipping
-                    await asyncio.sleep(1)
 
                     if self.queue or self.autoplay:
 
