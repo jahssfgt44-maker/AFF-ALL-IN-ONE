@@ -1066,15 +1066,24 @@ class MusicPlayer:
                 # FFMPEG
                 # -----------------------------------------
 
-               before_options = (
+               # -----------------------------------------
+                # FFMPEG
+                # -----------------------------------------
+
+                before_options = (
                     "-nostdin "
                     "-reconnect 1 "
                     "-reconnect_streamed 1 "
+                    "-reconnect_at_eof 1 "
+                    "-reconnect_on_network_error 1 "
+                    "-reconnect_on_http_error "
+                    "403,404,408,429,500,502,503,504 "
                     "-reconnect_delay_max 5 "
-                    f"-headers \"{ffmpeg_headers}\""
+                    "-rw_timeout 15000000 "
+                    "-headers "
+                    f"\"{ffmpeg_headers}\""
                 )
 
-                # Yahan sirf ek hi baar -ar aur -ac hona chahiye
                 ffmpeg_options = (
                     "-vn "
                     "-loglevel warning "
