@@ -482,9 +482,9 @@ class MusicPlayer:
         loop = asyncio.get_running_loop()
 
         def extract():
-            strategies = [
-                "player_client": ["web_safari"]
-            ]
+           strategies = [
+    {"player_client": ["web_safari"]}
+]
 
             for index, strategy in enumerate(strategies, 1):
                 try:
