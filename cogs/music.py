@@ -1168,15 +1168,16 @@ class MusicPlayer:
                 # FFMPEG
                 # -----------------------------------------
 
-                # -----------------------------------------
-                # FFMPEG
-                # -----------------------------------------
-
                 before_options = (
                     "-nostdin "
                     "-reconnect 1 "
                     "-reconnect_streamed 1 "
-                    "-reconnect_delay_max 5 "
+                    "-reconnect_at_eof 1 "
+                    "-reconnect_on_network_error 1 "
+                    "-reconnect_on_http_error "
+                    "403,404,408,429,500,502,503,504 "
+                    "-reconnect_delay_max 3 "
+                    "-rw_timeout 10000000 "
                     "-headers "
                     f"\"{ffmpeg_headers}\""
                 )
@@ -1186,7 +1187,7 @@ class MusicPlayer:
                     "-loglevel warning "
                     "-ar 48000 "
                     "-ac 2 "
-                    "-f s16le"
+                    "-bufsize 512k"
                 )
 
                 try:
