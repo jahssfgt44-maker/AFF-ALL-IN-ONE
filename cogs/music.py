@@ -1107,28 +1107,22 @@ class MusicPlayer:
                     song
                 )
 
-               if not stream:
+                       if not stream:
+            print("[MUSIC] [ERROR] Audio stream unavailable:", song.title)
 
-    print(
-        "[MUSIC] [ERROR] Audio stream unavailable:",
-        song.title
-    )
+            self.current = song
+            self.starting = False
 
-    # Keep failed song as current.
-    # Do not automatically skip to the next song.
-    self.current = song
+            if self.text_channel:
+                try:
+                    await self.text_channel.send(
+                        f"⚠️ Could not load audio for **{song.title}**. "
+                        "Use `/skip` to try the next song."
+                    )
+                except Exception:
+                    pass
 
-    if self.text_channel:
-        try:
-            await self.text_channel.send(
-                f"⚠️ Could not load audio for **{song.title}**. "
-                "Use `/skip` to try the next song."
-            )
-        except Exception:
-            pass
-
-    return
-
+            return
                 # -----------------------------------------
                 # TOKEN CHECK
                 # -----------------------------------------
