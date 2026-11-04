@@ -478,13 +478,13 @@ class MusicPlayer:
     # AUDIO STREAM
     # -----------------------------------------------------
 
-    async def get_audio_stream(self, song):
+        async def get_audio_stream(self, song):
         loop = asyncio.get_running_loop()
 
         def extract():
-           strategies = [
-    {"player_client": ["web_safari"]}
-]
+            strategies = [
+                {"player_client": ["web_safari"]}
+            ]
 
             for index, strategy in enumerate(strategies, 1):
                 try:
@@ -499,10 +499,10 @@ class MusicPlayer:
                         "skip_download": True,
                         "noplaylist": True,
                         "extract_flat": False,
-                       "format": "best[protocol^=m3u8]/best",
+                        "format": "best[protocol^=m3u8]/best",
                         "extractor_args": {
-    "youtube": strategy
-},
+                            "youtube": strategy
+                        },
                     })
 
                     with yt_dlp.YoutubeDL(options) as ydl:
@@ -514,57 +514,19 @@ class MusicPlayer:
                     if not info:
                         continue
 
-                    if "entries" in info:
-                        entries = [
-                            x for x in (info.get("entries") or [])
-                            if x
-                        ]
-
-                        if not entries:
-                            continue
-
-                        info = entries[0]
-
                     stream_url = info.get("url")
-
-                    if not stream_url:
-                        formats = info.get("formats") or []
-
-                        audio_formats = [
-                            f for f in formats
-                            if f.get("url")
-                            and f.get("acodec") not in (None, "none")
-                        ]
-
-                        audio_formats.sort(
-                            key=lambda f: f.get("abr") or 0,
-                            reverse=True
-                        )
-
-                        if audio_formats:
-                            stream_url = audio_formats[0].get("url")
-
                     if not stream_url:
                         continue
 
-                    headers = dict(info.get("http_headers") or {})
-                    headers.setdefault("User-Agent", USER_AGENT)
-                    headers.setdefault(
-                        "Referer",
-                        "https://www.youtube.com/"
-                    )
-
                     print(
                         "[MUSIC] [STREAM OK]",
-                        "Format:",
-                        info.get("format_id"),
-                        "Protocol:",
-                        info.get("protocol")
+                        "Format:", info.get("format_id"),
+                        "Protocol:", info.get("protocol")
                     )
 
                     return {
                         "url": stream_url,
-                        "headers": headers,
+                        "headers": info.get("http_headers", {})
                     }
 
                 except Exception as e:
