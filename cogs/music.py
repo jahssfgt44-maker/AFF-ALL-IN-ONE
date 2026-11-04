@@ -478,7 +478,7 @@ class MusicPlayer:
     # AUDIO STREAM
     # -----------------------------------------------------
 
-        async def get_audio_stream(self, song):
+            async def get_audio_stream(self, song):
         loop = asyncio.get_running_loop()
 
         def extract():
@@ -530,10 +530,7 @@ class MusicPlayer:
                     }
 
                 except Exception as e:
-                    print(
-                        "[MUSIC] [STREAM ERROR]",
-                        repr(e)
-                    )
+                    print("[MUSIC] [STREAM ERROR]", repr(e))
 
             return None
 
