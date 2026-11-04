@@ -560,54 +560,42 @@ class AutoMod(commands.Cog):
     # READY
     # =====================================================
 
+   
     @commands.Cog.listener()
     async def on_ready(self):
 
         for guild in self.bot.guilds:
 
             try:
-
                 row = (
                     self.bot.db.get_guild(guild.id)
                     if hasattr(self.bot, "db")
                     else None
                 )
 
-                if row:
+                if row is not None:
+                    # sqlite3.Row ko dictionary mein convert karo
+                    row_data = dict(row)
 
                     self.settings[guild.id]["links"] = bool(
-                        row.get(
-                            "automod_links",
-                            True
-                        )
+                        row_data.get("automod_links", 1)
                     )
 
                     self.settings[guild.id]["spam"] = bool(
-                        row.get(
-                            "automod_spam",
-                            True
-                        )
+                        row_data.get("automod_spam", 1)
                     )
 
                     self.settings[guild.id]["duplicates"] = bool(
-                        row.get(
-                            "automod_duplicates",
-                            True
-                        )
+                        row_data.get("automod_duplicates", 1)
                     )
 
                     self.settings[guild.id]["badwords"] = bool(
-                        row.get(
-                            "automod_badwords",
-                            True
-                        )
+                        row_data.get("automod_badwords", 1)
                     )
 
             except Exception as e:
-
                 print(
-                    "[AUTOMOD] Database load error: "
-                    f"{e}",
+                    f"[AUTOMOD] Database load error for {guild.name}: {e}",
                     flush=True
                 )
 
@@ -620,6 +608,7 @@ class AutoMod(commands.Cog):
             "🛡️ Gali & Link whitelist systems loaded",
             flush=True
         )
+
 
     # =====================================================
     # MESSAGE LISTENER
