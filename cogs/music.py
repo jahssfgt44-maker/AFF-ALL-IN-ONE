@@ -704,24 +704,21 @@ class MusicPlayer:
 
         def extract():
 
-            # Naye updated player clients jo 403 Forbidden ko bypass karte hain
+            # Sabse naye aur reliable mobile/mweb clients jo bot detection bypass karte hain
             strategies = [
                 {
                     "player_client": [
-                        "ios",
-                        "web"
+                        "mweb"
                     ]
                 },
                 {
                     "player_client": [
-                        "tv",
-                        "web"
+                        "android"
                     ]
                 },
                 {
                     "player_client": [
-                        "android",
-                        "web"
+                        "ios"
                     ]
                 }
             ]
