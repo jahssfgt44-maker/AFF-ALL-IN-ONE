@@ -501,8 +501,8 @@ class MusicPlayer:
                         "extract_flat": False,
                        "format": "best[protocol^=m3u8]/best",
                         "extractor_args": {
-                            "youtube": strategy
-                        },
+    "youtube": strategy
+},
                     })
 
                     with yt_dlp.YoutubeDL(options) as ydl:
