@@ -699,75 +699,158 @@ class MusicPlayer:
 
     
     async def get_audio_stream(self, song):
+
         loop = asyncio.get_running_loop()
 
         def extract():
-            try:
-                options = yt_options()
 
-                options.update({
-                    "skip_download": True,
-                    "noplaylist": True,
-                    "extract_flat": False,
-                    "format": "bestaudio/best",
-                })
-
-                # IMPORTANT:
-                # Do not force web_embedded or android_vr.
-                # Let yt-dlp select its supported default clients.
-
-                with yt_dlp.YoutubeDL(options) as ydl:
-                    info = ydl.extract_info(
-                        song.url,
-                        download=False
-                    )
-
-                if not info:
-                    return None
-
-                if info.get("entries"):
-                    info = next(
-                        (entry for entry in info["entries"] if entry),
-                        None
-                    )
-
-                if not info:
-                    return None
-
-                stream_url = info.get("url")
-
-                if not stream_url:
-                    print("[MUSIC] [ERROR] No direct stream URL.")
-                    return None
-
-                headers = dict(info.get("http_headers") or {})
-
-                headers.setdefault("User-Agent", USER_AGENT)
-                headers.setdefault(
-                    "Referer",
-                    "https://www.youtube.com/"
-                )
-
-                print(
-                    "[MUSIC] [STREAM OK]",
-                    "Format:", info.get("format_id"),
-                    "Protocol:", info.get("protocol"),
-                    "Headers:", list(headers.keys())
-                )
-
-                return {
-                    "url": stream_url,
-                    "headers": headers
+            # Naye updated player clients jo 403 Forbidden ko bypass karte hain
+            strategies = [
+                {
+                    "player_client": [
+                        "ios",
+                        "web"
+                    ]
+                },
+                {
+                    "player_client": [
+                        "tv",
+                        "web"
+                    ]
+                },
+                {
+                    "player_client": [
+                        "android",
+                        "web"
+                    ]
                 }
+            ]
 
-            except Exception as e:
-                print(
-                    "[MUSIC] [STREAM ERROR]",
-                    repr(e)
-                )
-                return None
+            for index, strategy in enumerate(
+                strategies,
+                1
+            ):
 
-        return await loop.run_in_executor(None, extract)
+                try:
+
+                    print(
+                        "[MUSIC] [STREAM]",
+                        f"{index}/{len(strategies)}",
+                        song.title
+                    )
+
+                    options = yt_options()
+
+                    options.update({
+                        "skip_download": True,
+                        "noplaylist": True,
+                        "extract_flat": False,
+                        "format": "bestaudio/best",
+                    })
+
+                    options["extractor_args"] = {
+                        "youtube": strategy
+                    }
+
+                    with yt_dlp.YoutubeDL(
+                        options
+                    ) as ydl:
+
+                        info = ydl.extract_info(
+                            song.url,
+                            download=False
+                        )
+
+                    if not info:
+                        continue
+
+                    if "entries" in info:
+
+                        entries = [
+                            x
+                            for x in (
+                                info.get("entries")
+                                or []
+                            )
+                            if x
+                        ]
+
+                        if not entries:
+                            continue
+
+                        info = entries[0]
+
+                    stream_url = info.get("url")
+
+                    if not stream_url:
+
+                        formats = (
+                            info.get("formats")
+                            or []
+                        )
+
+                        audio_formats = [
+                            f
+                            for f in formats
+                            if f.get("url")
+                            and f.get("acodec")
+                            not in (None, "none")
+                        ]
+
+                        if audio_formats:
+
+                            audio_formats.sort(
+                                key=lambda f:
+                                (
+                                    f.get("abr")
+                                    or 0
+                                ),
+                                reverse=True
+                            )
+
+                            stream_url = (
+                                audio_formats[0]
+                                .get("url")
+                            )
+
+                    if not stream_url:
+                        continue
+
+                    headers = dict(
+                        info.get(
+                            "http_headers"
+                        )
+                        or {}
+                    )
+
+                    headers.setdefault(
+                        "User-Agent",
+                        USER_AGENT
+                    )
+
+                    headers.setdefault(
+                        "Referer",
+                        "https://www.youtube.com/"
+                    )
+
+                    return {
+                        "url": stream_url,
+                        "headers": headers
+                    }
+
+                except Exception as e:
+
+                    print(
+                        "[MUSIC] [STREAM ERROR]",
+                        repr(e)
+                    )
+
+            return None
+
+        return await loop.run_in_executor(
+            None,
+            extract
+        )
 
 
 
