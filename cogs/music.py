@@ -732,19 +732,12 @@ class MusicPlayer:
                     options = yt_options()
 
                     options.update({
-
                         "skip_download": True,
-
                         "noplaylist": True,
-
                         "extract_flat": False,
-
-                        "format": (
-                            "bestaudio[protocol^=http]"
-                            "/bestaudio"
-                        ),
-
+                        "format": "bestaudio/best",
                     })
+                    
 
                     options["extractor_args"] = {
                         "youtube": strategy
@@ -1174,12 +1167,10 @@ class MusicPlayer:
                     "-reconnect_streamed 1 "
                     "-reconnect_at_eof 1 "
                     "-reconnect_on_network_error 1 "
-                    "-reconnect_on_http_error "
-                    "403,404,408,429,500,502,503,504 "
-                    "-reconnect_delay_max 3 "
-                    "-rw_timeout 10000000 "
-                    "-headers "
-                    f"\"{ffmpeg_headers}\""
+                    "-reconnect_on_http_error 403,404,408,429,500,502,503,504 "
+                    "-reconnect_delay_max 5 "
+                    "-rw_timeout 15000000 "
+                    f"-headers \"{ffmpeg_headers}\""
                 )
 
                 ffmpeg_options = (
@@ -1187,7 +1178,9 @@ class MusicPlayer:
                     "-loglevel warning "
                     "-ar 48000 "
                     "-ac 2 "
-                    "-bufsize 512k"
+                    "-f s16le "
+                    "-buffering_slop 0 "
+                    "-max_muxing_queue_size 9999"
                 )
 
                 try:
