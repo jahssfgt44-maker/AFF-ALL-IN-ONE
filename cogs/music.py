@@ -1175,6 +1175,10 @@ class MusicPlayer:
                 # FFMPEG (Silent Playback Fix)
                 # -----------------------------------------
 
+                # -----------------------------------------
+                # FFMPEG (Clean & Stable Setup)
+                # -----------------------------------------
+
                 before_options = (
                     "-nostdin "
                     "-reconnect 1 "
@@ -1185,14 +1189,8 @@ class MusicPlayer:
                     f"\"{ffmpeg_headers}\""
                 )
 
-                # Yahan audio filter aur sample rate ko explicitly set kiya hai taaki Discord ko clean PCM mile
-                ffmpeg_options = (
-                    "-vn "
-                    "-ar 48000 "
-                    "-ac 2 "
-                    "-f s16le "
-                    "-af volume=1.0"
-                )
+                # Yahan se forced sample rate/channels hata diye hain taaki FFmpeg khud stream ko handle kare
+                ffmpeg_options = "-vn"
 
                 try:
                     source = discord.FFmpegPCMAudio(
