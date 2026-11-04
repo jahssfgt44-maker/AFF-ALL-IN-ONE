@@ -1182,11 +1182,12 @@ class MusicPlayer:
                     f"\"{ffmpeg_headers}\""
                 )
 
+                # FFmpegPCMAudio already appends its required PCM output
+                # settings (-f s16le -ar 48000 -ac 2). Do not repeat -ar/-ac
+                # here, otherwise FFmpeg prints duplicate-option warnings.
                 ffmpeg_options = (
                     "-vn "
                     "-loglevel warning "
-                    "-ar 48000 "
-                    "-ac 2 "
                     "-bufsize 512k"
                 )
 
